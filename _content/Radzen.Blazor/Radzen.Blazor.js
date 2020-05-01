@@ -40,6 +40,19 @@ var Radzen = {
                 }
             }
         };
+        xhr.onreadystatechange = function (e) {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                var status = xhr.status;
+                var uploadComponent = Radzen.uploadComponents && Radzen.uploadComponents[fileInput.id];
+                if (uploadComponent) {
+                    if (status === 0 || (status >= 200 && status < 400)) {
+                        uploadComponent.invokeMethodAsync("RadzenUpload.OnComplete", xhr.responseText);
+                    } else {
+                        uploadComponent.invokeMethodAsync("RadzenUpload.OnError", xhr.responseText);
+                    }
+                }
+            }
+        };
         xhr.open('POST', url, true);
         xhr.send(data);
     },
@@ -116,7 +129,7 @@ var Radzen = {
 
         document.body.appendChild(popup);
         document.addEventListener('click', Radzen[id]);
-        document.addEventListener("scroll", Radzen[id], true);
+        //document.addEventListener("scroll", Radzen[id], true);
     },
     closePopup: function(id) {
         var popup = document.getElementById(id);
@@ -124,7 +137,7 @@ var Radzen = {
             popup.style.display = 'none';
         }
         document.removeEventListener('click', Radzen[id]);
-        document.removeEventListener("scroll", Radzen[id]);
+        //document.removeEventListener("scroll", Radzen[id]);
     },
     togglePopup: function(parent, id, syncWidth) {
         var popup = document.getElementById(id);
