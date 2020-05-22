@@ -2938,6 +2938,16 @@ p-radiobutton,
   stroke: none;
   text-anchor: middle; }
 
+.rz-donut-title {
+  text-anchor: middle; }
+
+.rz-donut-content {
+  height: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; }
+
 .rz-legend {
   position: absolute;
   display: flex; }

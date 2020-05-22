@@ -15,7 +15,211 @@ if (!Element.prototype.closest) {
     };
 }
 
-var Radzen = {
+var resolveCallbacks = [];
+var rejectCallbacks = [];
+
+window.Radzen = {
+    loadGoogleMaps: function (defaultView, apiKey, resolve, reject) {
+        resolveCallbacks.push(resolve);
+        rejectCallbacks.push(reject);
+
+        if (defaultView['rz_map_init']) {
+            return;
+        }
+
+        defaultView['rz_map_init'] = function () {
+            for (var i = 0; i < resolveCallbacks.length; i++) {
+                resolveCallbacks[i](defaultView.google);
+            }
+        };
+
+        var document = defaultView.document;
+        var script = document.createElement('script');
+
+        script.src = 'https://maps.googleapis.com/maps/api/js?' + (apiKey ? 'key=' + apiKey + '&' : '') + 'callback=rz_map_init';
+
+        script.async = true;
+        script.defer = true;
+        script.onerror = function (err) {
+            for (var i = 0; i < rejectCallbacks.length; i++) {
+                rejectCallbacks[i](err);
+            }
+        };
+
+        document.body.appendChild(script);
+    },
+    createMap: function (wrapper, ref, id, apiKey, zoom, center, markers) {
+        var api = function () {
+            var defaultView = document.defaultView;
+
+            return new Promise(function (resolve, reject) {
+                if (defaultView.google && defaultView.google.maps) {
+                    return resolve(defaultView.google);
+                }
+
+                Radzen.loadGoogleMaps(defaultView, apiKey, resolve, reject);
+            });
+        }
+
+        api().then(function (google) {
+            Radzen[id] = ref;
+            Radzen[id].google = google;
+
+            Radzen[id].instance = new google.maps.Map(wrapper, {
+                center: center,
+                zoom: zoom
+            });
+
+            Radzen[id].instance.addListener('click', function (e) {
+                Radzen[id].invokeMethodAsync('RadzenGoogleMap.OnMapClick', { Position: { Lat: e.latLng.lat(), Lng: e.latLng.lng()} });
+            });
+
+            Radzen.updateMap(id, zoom, center, markers)
+        });
+    },
+    updateMap: function (id, zoom, center, markers) {
+        if (Radzen[id] && Radzen[id].instance) {
+
+            if (Radzen[id].instance.markers && Radzen[id].instance.markers.length) {
+                for (var i = 0; i < Radzen[id].instance.markers.length; i++) {
+                    Radzen[id].instance.markers[i].setMap(null);
+                }
+            }
+
+            Radzen[id].instance.markers = [];
+
+            markers.forEach(function (m) {
+                var marker = new this.google.maps.Marker({
+                    position: m.position,
+                    title: m.title,
+                    label: m.label
+                });
+
+                marker.addListener('click', function (e) {
+                    Radzen[id].invokeMethodAsync('RadzenGoogleMap.OnMarkerClick', { Title: marker.title, Label: marker.label, Position : marker.position});
+                });
+
+                marker.setMap(Radzen[id].instance);
+
+                Radzen[id].instance.markers.push(marker);
+            });
+
+            Radzen[id].instance.setZoom(zoom);
+
+            Radzen[id].instance.setCenter(center);
+        }
+    },
+    destroyMap: function (id) {
+        if (Radzen[id].instance) {
+            delete Radzen[id].instance;
+        }
+    },
+    createSlider: function (slider, parent, range, minHandle, maxHandle, min, max, value) {
+        slider.mouseMoveHandler = function (e) {
+            var offsetX = e.targetTouches && e.targetTouches[0] ? e.targetTouches[0].pageX - e.target.getBoundingClientRect().left : e.offsetX;
+            var percent = (minHandle == e.target || maxHandle == e.target ? e.target.offsetLeft + offsetX : offsetX) / parent.offsetWidth;
+            var newValue = percent * max;
+            var oldValue = range ? value[slider.isMin ? 0 : 1] : value;
+            if (slider.canChange && newValue >= min && newValue <= max && newValue != oldValue) {
+                slider.invokeMethodAsync('RadzenSlider.OnValueChange', newValue, !!slider.isMin);
+            }
+            e.preventDefault();
+        }
+
+        slider.mouseDownHandler = function (e) {
+            if (minHandle == e.target || maxHandle == e.target) {
+                slider.canChange = true;
+                slider.isMin = minHandle == e.target;
+            } else {
+                var offsetX = e.targetTouches && e.targetTouches[0] ? e.targetTouches[0].pageX - e.target.getBoundingClientRect().left : e.offsetX;
+                var percent = offsetX / parent.offsetWidth;
+                var newValue = percent * max;
+                var oldValue = range ? value[slider.isMin ? 0 : 1] : value;
+                if (newValue >= min && newValue <= max && newValue != oldValue) {
+                    slider.invokeMethodAsync('RadzenSlider.OnValueChange', newValue, !!slider.isMin);
+                }
+            }
+        }
+
+        slider.mouseUpHandler = function (e) {
+            slider.canChange = false;
+        }
+
+        document.addEventListener("mousemove", slider.mouseMoveHandler);
+        document.addEventListener("touchmove", slider.mouseMoveHandler, { passive: false });
+
+        document.addEventListener("mouseup", slider.mouseUpHandler);
+        document.addEventListener("touchend", slider.mouseUpHandler);
+
+        parent.addEventListener("mousedown", slider.mouseDownHandler);
+        parent.addEventListener("touchstart", slider.mouseDownHandler);
+    },
+    destroySlider: function (slider, parent) {
+        if (slider.mouseMoveHandler) {
+            document.removeEventListener('mousemove', slider.mouseMoveHandler);
+            document.removeEventListener('touchmove', slider.mouseMoveHandler);
+            delete slider.mouseMoveHandler;
+        }
+        if (slider.mouseUpHandler) {
+            document.removeEventListener('mouseup', slider.mouseUpHandler);
+            document.removeEventListener('touchend', slider.mouseUpHandler);
+            delete slider.mouseUpHandler;
+        }
+        if (slider.mouseDownHandler) {
+            parent.removeEventListener('mousedown', slider.mouseDownHandler);
+            parent.removeEventListener('touchstart', slider.mouseDownHandler);
+            delete slider.mouseDownHandler;
+        }
+    },
+    focusElement: function (elementId) {
+        var el = document.getElementById(elementId);
+        if (el) {
+            el.focus();
+        }
+    },
+    focusListItem: function (input, ul, isDown, startIndex) {
+        if (!input || !ul)
+            return;
+
+        var childNodes = ul.getElementsByTagName('LI');
+
+        if (!childNodes || childNodes.length == 0)
+            return;
+
+        if (startIndex == undefined || startIndex == null) {
+            startIndex = -1;
+        }
+
+        ul.nextSelectedIndex = startIndex;
+
+        ul.prevSelectedIndex = ul.nextSelectedIndex;
+
+        if (isDown) {
+            if (ul.nextSelectedIndex < childNodes.length - 1) {
+                ul.nextSelectedIndex++;
+            }
+        }
+        else {
+            if (ul.nextSelectedIndex > 0) {
+                ul.nextSelectedIndex--;
+            }
+        }
+
+        if (ul.prevSelectedIndex >= 0 && ul.prevSelectedIndex <= childNodes.length - 1) {
+            childNodes[ul.prevSelectedIndex].classList.remove('ui-state-highlight');
+        }
+
+        if (ul.nextSelectedIndex >= 0 && ul.nextSelectedIndex <= childNodes.length - 1) {
+            childNodes[ul.nextSelectedIndex].classList.add('ui-state-highlight');
+            if (ul.parentNode.classList.contains('ui-autocomplete-panel')) {
+                ul.parentNode.scrollTop = childNodes[ul.nextSelectedIndex].offsetTop;
+            } else {
+                ul.parentNode.scrollTop = childNodes[ul.nextSelectedIndex].offsetTop - ul.parentNode.offsetTop;
+            }
+        }
+
+        return ul.nextSelectedIndex;
+    },
     uploads: function (uploadComponent, id) {
         if (!Radzen.uploadComponents) {
             Radzen.uploadComponents = {};
@@ -56,25 +260,25 @@ var Radzen = {
         xhr.open('POST', url, true);
         xhr.send(data);
     },
-    getCookie : function (name) {
+    getCookie: function (name) {
         var value = "; " + decodeURIComponent(document.cookie);
         var parts = value.split("; " + name + "=");
         if (parts.length == 2) return parts.pop().split(";").shift();
     },
-    getCulture: function() {
+    getCulture: function () {
         var cultureCookie = Radzen.getCookie(".AspNetCore.Culture");
         var uiCulture = cultureCookie ? cultureCookie.split('|').pop().split('=').pop() : null;
         return uiCulture || 'en-US';
     },
     numericOnPaste: function (e) {
         if (e.clipboardData) {
-          var value = e.clipboardData.getData('text');
+            var value = e.clipboardData.getData('text');
 
-          if (value && /^-?\d*\.?\d*$/.test(value)) {
-            return;
-          }
+            if (value && /^-?\d*\.?\d*$/.test(value)) {
+                return;
+            }
 
-          e.preventDefault();
+            e.preventDefault();
         }
     },
     numericKeyPress: function (e) {
@@ -90,12 +294,18 @@ var Radzen = {
 
         e.preventDefault();
     },
-    openPopup: function(parent, id, syncWidth) {
+    openPopup: function (parent, id, syncWidth) {
         var popup = document.getElementById(id);
         var parentRect = parent.getBoundingClientRect();
 
-        var scrollLeft = document.documentElement.scrollLeft
-        var scrollTop = document.documentElement.scrollTop;
+        if (/Edge/.test(navigator.userAgent)) {
+            var scrollLeft = document.body.scrollLeft
+            var scrollTop = document.body.scrollTop;
+
+        } else {
+            var scrollLeft = document.documentElement.scrollLeft
+            var scrollTop = document.documentElement.scrollTop;
+        }
 
         var top = parentRect.bottom + scrollTop;
         var left = parentRect.left + scrollLeft;
@@ -129,17 +339,15 @@ var Radzen = {
 
         document.body.appendChild(popup);
         document.addEventListener('click', Radzen[id]);
-        //document.addEventListener("scroll", Radzen[id], true);
     },
-    closePopup: function(id) {
+    closePopup: function (id) {
         var popup = document.getElementById(id);
         if (popup) {
             popup.style.display = 'none';
         }
         document.removeEventListener('click', Radzen[id]);
-        //document.removeEventListener("scroll", Radzen[id]);
     },
-    togglePopup: function(parent, id, syncWidth) {
+    togglePopup: function (parent, id, syncWidth) {
         var popup = document.getElementById(id);
 
         if (popup.style.display == 'block') {
@@ -147,12 +355,13 @@ var Radzen = {
         } else {
             Radzen.openPopup(parent, id, syncWidth);
         }
-    }, 
-    destroyPopup: function(id) {
+    },
+    destroyPopup: function (id) {
         var popup = document.getElementById(id);
-        popup.parentNode.removeChild(popup);
+        if (popup) {
+            popup.parentNode.removeChild(popup);
+        }
         document.removeEventListener('click', Radzen[id]);
-        document.removeEventListener("scroll", Radzen[id]);
     },
     scrollDataGrid: function (e) {
         var scrollLeft = (e.target.scrollLeft ? '-' + e.target.scrollLeft : 0) + 'px';
@@ -175,7 +384,7 @@ var Radzen = {
         var input = (arg instanceof Element || arg instanceof HTMLDocument) ? arg : document.getElementById(arg);
         return input ? input.value : '';
     },
-    setInputValue: function (arg,value) {
+    setInputValue: function (arg, value) {
         var input = (arg instanceof Element || arg instanceof HTMLDocument) ? arg : document.getElementById(arg);
         if (input) {
             input.value = value;
@@ -261,7 +470,7 @@ var Radzen = {
         document.removeEventListener('click', Radzen.closeMenuItems);
         document.addEventListener('click', Radzen.closeMenuItems);
     },
-    destroyChart: function(ref) {
+    destroyChart: function (ref) {
         if (ref.resizeHandler) {
             window.removeEventListener("resize", ref.resizeHandler);
             delete ref.resizeHandler;
@@ -271,16 +480,16 @@ var Radzen = {
             delete ref.mouseMoveHandler;
         }
     },
-    createChart: function(ref, instance) {
+    createChart: function (ref, instance) {
         var rect = ref.getBoundingClientRect();
 
-        ref.resizeHandler = function() {
+        ref.resizeHandler = function () {
             var rect = ref.getBoundingClientRect();
 
             instance.invokeMethodAsync("Resize", rect.width, rect.height);
         }
 
-        ref.mouseMoveHandler = function(e) {
+        ref.mouseMoveHandler = function (e) {
             var rect = ref.getBoundingClientRect();
             var x = e.clientX - rect.left;
             var y = e.clientY - rect.top;
@@ -291,6 +500,6 @@ var Radzen = {
 
         window.addEventListener("resize", ref.resizeHandler);
 
-        return rect;
+        return { width: rect.width, height: rect.height };
     }
 };

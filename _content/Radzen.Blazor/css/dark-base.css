@@ -272,7 +272,7 @@ p-button[type] {
     color: inherit; }
 
 input {
-  color: #212529;
+  color: #ffffff;
   font-size: 0.875rem; }
   input::placeholder {
     color: #3a3a3a; }
@@ -289,7 +289,7 @@ input {
 .textbox, .textarea, .mask, .ui-dropdown, .ui-multiselect, .ui-calendar-w-btn, .ui-spinner, .ui-lookup-search input {
   height: 2.1875rem;
   line-height: 1.75rem;
-  color: #212529;
+  color: #ffffff;
   font-size: 0.875rem; }
 
 @media (max-width: 768px) {
@@ -356,7 +356,7 @@ p-accordiontab {
   display: block; }
 
 .ui-accordion-header a[role='tab'] {
-  color: #212529;
+  color: #ffffff;
   line-height: 1.5rem;
   text-decoration: none;
   color: inherit;
@@ -635,17 +635,17 @@ ul.profile-menu {
 .ui-steps .ui-menuitem-link {
   display: inline-flex;
   align-items: center;
-  color: #212529;
+  color: #ffffff;
   cursor: pointer; }
   .ui-steps .ui-menuitem-link:hover {
     text-decoration: none;
     color: #479cc8 !important; }
 
 .ui-steps .ui-state-disabled .ui-menuitem-link {
-  color: rgba(33, 37, 41, 0.5);
+  color: rgba(255, 255, 255, 0.5);
   cursor: default; }
   .ui-steps .ui-state-disabled .ui-menuitem-link:hover {
-    color: rgba(33, 37, 41, 0.5) !important; }
+    color: rgba(255, 255, 255, 0.5) !important; }
 
 .ui-steps .ui-state-highlight .ui-steps-title {
   color: #479cc8; }
@@ -932,7 +932,7 @@ p-radiobutton,
 
 .ui-dropdown-filter, .ui-multiselect-filter-container .ui-inputtext {
   background-color: transparent;
-  color: #212529; }
+  color: #ffffff; }
 
 .ui-multiselect-header {
   display: flex;
@@ -1385,11 +1385,11 @@ p-radiobutton,
     .ui-datepicker-calendar td .ui-state-default {
       display: block;
       padding: 0.5rem 0.875rem;
-      color: #212529;
+      color: #ffffff;
       font-size: 0.875rem; }
       .ui-datepicker-calendar td .ui-state-default:hover {
         text-decoration: none;
-        color: #212529;
+        color: #ffffff;
         cursor: default; }
     .ui-datepicker-calendar td .ui-state-active {
       color: #ffffff;
@@ -1406,7 +1406,7 @@ p-radiobutton,
   justify-content: center;
   border-top: 1px solid rgba(58, 71, 77, 0.2);
   padding: 0.5rem;
-  color: #212529; }
+  color: #ffffff; }
   .ui-timepicker .pi-chevron-up:before {
     content: "expand_less"; }
   .ui-timepicker .pi-chevron-down:before {
@@ -1620,14 +1620,14 @@ p-radiobutton,
 
 .ui-rowgroup-header .fa,
 .ui-row-toggler {
-  color: #212529; }
+  color: #ffffff; }
 
 .ui-datatable-scrollable-footer {
   background-color: #2f3d43;
   border-top: 1px solid #45565d; }
 
 .ui-datatable-thead .pi, .ui-datatable-thead .ui-menuitem .ui-menuitem-icon, .ui-menuitem .ui-datatable-thead .ui-menuitem-icon {
-  color: #212529; }
+  color: #ffffff; }
 
 .ui-datatable-thead th {
   background-color: #2f3d43;
@@ -1648,7 +1648,7 @@ p-radiobutton,
 .ui-datatable-tfoot td {
   background-color: #2f3d43;
   font-size: 0.875rem;
-  color: #212529;
+  color: #ffffff;
   padding: 0.5rem 0.625rem 0.5rem 0.625rem;
   white-space: nowrap;
   overflow: hidden;
@@ -1720,7 +1720,7 @@ p-radiobutton,
   .ui-datatable-data td:not(:last-child) {
     border-right: 1px solid #45565d; }
   .ui-datatable-data td .ui-cell-data {
-    color: #212529;
+    color: #ffffff;
     font-size: 0.875rem;
     display: block;
     overflow: hidden;
@@ -2003,7 +2003,7 @@ p-radiobutton,
   color: #515f65; }
   .ui-paginator-page.ui-state-active {
     background-color: #3a474d;
-    color: #212529;
+    color: #ffffff;
     border: 1px solid #3a474d;
     padding: 0.25rem 0.625rem; }
 
@@ -2111,7 +2111,7 @@ p-radiobutton,
     .ui-tabview-nav li a {
       display: inline-flex;
       align-items: center;
-      color: rgba(33, 37, 41, 0.5);
+      color: rgba(255, 255, 255, 0.5);
       padding: 0.375rem 1.875rem;
       font-weight: 600; }
       .ui-tabview-nav li a:hover {
@@ -2125,7 +2125,7 @@ p-radiobutton,
     position: relative;
     border-top-color: #479cc8; }
     .ui-tabview-nav .ui-tabview-selected a {
-      color: #212529; }
+      color: #ffffff; }
 
 .ui-tabview-panels {
   background-color: #5d717b;
@@ -2938,6 +2938,16 @@ p-radiobutton,
   stroke: none;
   text-anchor: middle; }
 
+.rz-donut-title {
+  text-anchor: middle; }
+
+.rz-donut-content {
+  height: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; }
+
 .rz-legend {
   position: absolute;
   display: flex; }
@@ -2993,7 +3003,7 @@ p-radiobutton,
 
 .rz-chart-tooltip-content {
   background: rgba(255, 255, 255, 0.95);
-  color: #212529;
+  color: #ffffff;
   box-shadow: 0 6px 14px 0 rgba(0, 0, 0, 0.15);
   padding: 0.25rem 1rem;
   border-radius: 4px;
