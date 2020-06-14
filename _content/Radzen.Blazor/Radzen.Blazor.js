@@ -117,7 +117,7 @@ window.Radzen = {
     createSlider: function (slider, parent, range, minHandle, maxHandle, min, max, value) {
         slider.mouseMoveHandler = function (e) {
             var offsetX = e.targetTouches && e.targetTouches[0] ? e.targetTouches[0].pageX - e.target.getBoundingClientRect().left : e.offsetX;
-            var percent = (minHandle == e.target || maxHandle == e.target ? e.target.offsetLeft + offsetX : offsetX) / parent.offsetWidth;
+            var percent = (minHandle == e.target || maxHandle == e.target ? e.target.offsetLeft + offsetX : e.target.offsetLeft + offsetX) / parent.offsetWidth;
             var newValue = percent * max;
             var oldValue = range ? value[slider.isMin ? 0 : 1] : value;
             if (slider.canChange && newValue >= min && newValue <= max && newValue != oldValue) {
@@ -146,13 +146,13 @@ window.Radzen = {
         }
 
         document.addEventListener("mousemove", slider.mouseMoveHandler);
-        document.addEventListener("touchmove", slider.mouseMoveHandler, { passive: false });
+        document.addEventListener("touchmove", slider.mouseMoveHandler, { passive: true });
 
         document.addEventListener("mouseup", slider.mouseUpHandler);
-        document.addEventListener("touchend", slider.mouseUpHandler);
+        document.addEventListener("touchend", slider.mouseUpHandler, { passive: true });
 
         parent.addEventListener("mousedown", slider.mouseDownHandler);
-        parent.addEventListener("touchstart", slider.mouseDownHandler);
+        parent.addEventListener("touchstart", slider.mouseDownHandler, { passive: true });
     },
     destroySlider: function (slider, parent) {
         if (slider.mouseMoveHandler) {
@@ -501,5 +501,23 @@ window.Radzen = {
         window.addEventListener("resize", ref.resizeHandler);
 
         return { width: rect.width, height: rect.height };
+    },
+    destroyScheduler: function (ref) {
+      if (ref.resizeHandler) {
+          window.removeEventListener("resize", ref.resizeHandler);
+          delete ref.resizeHandler;
+      }
+    },
+    createScheduler: function (ref, instance) {
+      ref.resizeHandler = function () {
+        var rect = ref.getBoundingClientRect();
+
+        instance.invokeMethodAsync("Resize", rect.width, rect.height);
+      };
+
+      window.addEventListener("resize", ref.resizeHandler);
+
+      var rect = ref.getBoundingClientRect();
+      return { width: rect.width, height: rect.height };
     }
 };
