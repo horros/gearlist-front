@@ -7,11 +7,13 @@
     <meta property="og:title" content="Gearlist" />
     <meta property="og:image" content="https://gearlistweb.blob.core.windows.net/images/cover.png" />
     <meta property="og:description" content="Gearlist is a service where for example musicians or audio technicians can keep track of their gear." />
-    <title>GearlistFront</title>
+    <title>Gearlist</title>
     <base href="/" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
     <link rel="stylesheet" href="_content/Radzen.Blazor/css/default.css">
+    <link href="_content/BlazorPro.Spinkit/spinkit.min.css" rel="stylesheet" />
+
 </head>
 
 <body>
@@ -26,6 +28,11 @@
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="inputfile.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script type="text/javascript">
+        function getURI() {
+            return window.location.href;
+        }
+    </script>
 </body>
 
 </html>
