@@ -114,8 +114,9 @@ window.Radzen = {
             delete Radzen[id].instance;
         }
     },
-    createSlider: function (slider, parent, range, minHandle, maxHandle, min, max, value) {
-        slider.mouseMoveHandler = function (e) {
+    createSlider: function (id, slider, parent, range, minHandle, maxHandle, min, max, value) {
+        Radzen[id] = {};
+        Radzen[id].mouseMoveHandler = function (e) {
             var offsetX = e.targetTouches && e.targetTouches[0] ? e.targetTouches[0].pageX - e.target.getBoundingClientRect().left : e.offsetX;
             var percent = (minHandle == e.target || maxHandle == e.target ? e.target.offsetLeft + offsetX : e.target.offsetLeft + offsetX) / parent.offsetWidth;
             var newValue = percent * max;
@@ -126,7 +127,9 @@ window.Radzen = {
             e.preventDefault();
         }
 
-        slider.mouseDownHandler = function (e) {
+        Radzen[id].mouseDownHandler = function (e) {
+            if (parent.classList.contains('ui-state-disabled'))
+                return;
             if (minHandle == e.target || maxHandle == e.target) {
                 slider.canChange = true;
                 slider.isMin = minHandle == e.target;
@@ -141,35 +144,40 @@ window.Radzen = {
             }
         }
 
-        slider.mouseUpHandler = function (e) {
+        Radzen[id].mouseUpHandler = function (e) {
             slider.canChange = false;
         }
 
-        document.addEventListener("mousemove", slider.mouseMoveHandler);
-        document.addEventListener("touchmove", slider.mouseMoveHandler, { passive: true });
+        document.addEventListener("mousemove", Radzen[id].mouseMoveHandler);
+        document.addEventListener("touchmove", Radzen[id].mouseMoveHandler, { passive: true });
 
-        document.addEventListener("mouseup", slider.mouseUpHandler);
-        document.addEventListener("touchend", slider.mouseUpHandler, { passive: true });
+        document.addEventListener("mouseup", Radzen[id].mouseUpHandler);
+        document.addEventListener("touchend", Radzen[id].mouseUpHandler, { passive: true });
 
-        parent.addEventListener("mousedown", slider.mouseDownHandler);
-        parent.addEventListener("touchstart", slider.mouseDownHandler, { passive: true });
+        parent.addEventListener("mousedown", Radzen[id].mouseDownHandler);
+        parent.addEventListener("touchstart", Radzen[id].mouseDownHandler, { passive: true });
     },
-    destroySlider: function (slider, parent) {
-        if (slider.mouseMoveHandler) {
-            document.removeEventListener('mousemove', slider.mouseMoveHandler);
-            document.removeEventListener('touchmove', slider.mouseMoveHandler);
-            delete slider.mouseMoveHandler;
+    destroySlider: function (id, parent) {
+        if (!Radzen[id])
+            return;
+
+        if (Radzen[id].mouseMoveHandler) {
+            document.removeEventListener('mousemove', Radzen[id].mouseMoveHandler);
+            document.removeEventListener('touchmove', Radzen[id].mouseMoveHandler);
+            delete Radzen[id].mouseMoveHandler;
         }
-        if (slider.mouseUpHandler) {
-            document.removeEventListener('mouseup', slider.mouseUpHandler);
-            document.removeEventListener('touchend', slider.mouseUpHandler);
-            delete slider.mouseUpHandler;
+        if (Radzen[id].mouseUpHandler) {
+            document.removeEventListener('mouseup', Radzen[id].mouseUpHandler);
+            document.removeEventListener('touchend', Radzen[id].mouseUpHandler);
+            delete Radzen[id].mouseUpHandler;
         }
-        if (slider.mouseDownHandler) {
-            parent.removeEventListener('mousedown', slider.mouseDownHandler);
-            parent.removeEventListener('touchstart', slider.mouseDownHandler);
-            delete slider.mouseDownHandler;
+        if (Radzen[id].mouseDownHandler) {
+            parent.removeEventListener('mousedown', Radzen[id].mouseDownHandler);
+            parent.removeEventListener('touchstart', Radzen[id].mouseDownHandler);
+            delete Radzen[id].mouseDownHandler;
         }
+
+        Radzen[id] = null;
     },
     focusElement: function (elementId) {
         var el = document.getElementById(elementId);
