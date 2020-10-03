@@ -9,7 +9,7 @@
   "linkerEnabled": false,
   "resources": {
     "assembly": {
-      "GearlistFront.dll": "sha256-w\/1TElIrrTdX9pXKXizObiwcSnoVnGQDTLYF6cN6Xro=",
+      "GearlistFront.dll": "sha256-p+4oQd7jsDhpc4O4693FdYBctw0rYrpdU13p5Jw376k=",
       "Microsoft.CSharp.dll": "sha256-4vI1VhYQc3ciMcVyDcfzkVClS6PSWXwcP7v34AJMyvM=",
       "Microsoft.VisualBasic.Core.dll": "sha256-7Y7+jlT7RAMqJ4OVIVOmjHDW47YBouX+8j4xPgj0HF4=",
       "Microsoft.VisualBasic.dll": "sha256-WRonNAetUVTfocDv0pXB6JfzfEuBtDAqRBDGrFXoePE=",
